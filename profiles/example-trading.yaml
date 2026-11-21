@@ -1,0 +1,44 @@
+# Example Profile for a trading bot. Copy it and fill in your own project.
+name: example-trading-bot
+version: "1.0"
+repo: ../your-project            # path to the project's git repository
+harms:
+  - code: H1
+    title: Wrong trade
+    meaning: Opens, closes, sizes or keeps a position the rules did not ask for, or sends an order twice.
+  - code: H2
+    title: Wrong money record
+    meaning: A recorded profit, fee or deposit is wrong, doubled, or lost for good.
+  - code: H3
+    title: Wrong money calculation
+    meaning: A risk or profit figure used to decide is calculated wrongly. How a correct figure is shown is a Note.
+  - code: H4
+    title: Unprotected position
+    meaning: A position is left without its stop, or an enabled risk limit lets through what it should refuse.
+  - code: H5
+    title: Control or secret
+    meaning: A secret is exposed, or someone without permission can control the bot.
+notes:
+  - messages and alerts that are not sent
+  - log lines, display, wording, documents
+operating_conditions:
+  - The broker carries out stops it has accepted.
+  - One copy of the bot trades the account.
+  - The operator follows the accepted runbook.
+owner_choices:
+  - strategy rules (entries, exits, stop placement, sizing)
+pinned_files:
+  - docs/KNOWN_LIMITS.md
+known_problems: docs/KNOWN_LIMITS.md
+machine_check:
+  python: python3
+  test_command: "{python} -m pytest -q -p no:cacheprovider {test}"
+  runs: 5
+  no_network: true
+  reviewed_packages: [yourbot]
+  allowed_stand_ins: [yourbot.broker_client, yourbot.clock]
+judges:
+  - kind: claude-code
+    model: claude-opus-5-5
+  - kind: claude-code
+    model: claude-sonnet-5-5
