@@ -47,8 +47,17 @@ def _court():
 
 def build_server():
     srv = _Server("bifrost-guard", instructions=INSTRUCTIONS)
+    register(srv)
+    return srv
 
-    @srv.tool()
+
+def register(srv, annotations=None):
+    # `annotations` (e.g. read-only hints) apply to the three reading tools only.
+    """Add the guard's tools to an existing MCP server (mcp 1.x FastMCP or 2.x MCPServer).
+    Put INSTRUCTIONS at the top of that server's own instructions, so agents read the Law first."""
+    kw = {"annotations": annotations} if annotations is not None else {}
+
+    @srv.tool(**kw)
     def guard_rules() -> str:
         """The Law, the project's Profile (its harms and conditions), and how to hand in a finding."""
         c = _court()
@@ -56,7 +65,7 @@ def build_server():
         return (f"{LAW_PATH.read_text()}\n\n=== PROFILE: {c.p.name} {c.p.version} ===\n"
                 f"{c.p.source.read_text()}\n\n=== HARMS ===\n{harms}")
 
-    @srv.tool()
+    @srv.tool(**kw)
     def guard_round() -> str:
         """The round that is open now: which commit, full or fixes-only, and when it closes."""
         c = _court()
@@ -68,7 +77,7 @@ def build_server():
                 "since_commit": r["since_commit"], "closes_utc": r["closes"]}
         return json.dumps(info)
 
-    @srv.tool()
+    @srv.tool()  # writes a finding into the Court's record, so never marked read-only
     def guard_submit_finding(reviewer: str, title: str, file: str, line: int, steps: str, happens: str,
                              should: str, harm: str, test: str) -> str:
         """Hand in one finding. `harm` is a harm code from the Profile (leave empty for a Note).
@@ -79,7 +88,7 @@ def build_server():
                                       should=should, harm=harm, test=test))
         return json.dumps(res)
 
-    @srv.tool()
+    @srv.tool(**kw)
     def guard_report(round_id: int | None = None) -> str:
         """The Court's report for a round (the open one, or the latest)."""
         c = _court()
@@ -90,8 +99,6 @@ def build_server():
                 return "No round has been held yet."
             r = rs[-1]
         return round_report(c.s, r["id"]) + "\n\n" + release_status(c.s, c.release)
-
-    return srv
 
 
 def main():
