@@ -38,6 +38,52 @@ In short:
 5. Write for someone who is not a developer: short sentences, everyday words."""
 
 
+INSTRUCTIONS_LAW_ONLY = """This project is reviewed under the bifrost-guard Law. Read it with `guard_rules` before
+you review anything.
+
+In short:
+1. Only real harm counts. The project's harms are listed by `guard_rules`. Everything else is a
+   Note: messages, logs, wording, documents, display, style. Notes never block anything.
+2. You run the Court on your own side, with the Law and the Profile from `guard_rules`
+   (`guard_rules` explains how). This server only gives information; it takes no findings.
+3. A finding counts only if your Court ran its test itself, on the exact commit: the test ends
+   with an assertion whose message starts with "HARM:", fails every time, and replaces only the
+   outside world, never the project's own code.
+4. Report the Court's result. Its first line is "Material findings: N". Everything that is not
+   Material goes on the Operator's list. Do not ask for anything on that list to be fixed.
+5. Write for someone who is not a developer: short sentences, everyday words."""
+
+HOW_TO_RUN = """=== HOW TO RUN THE COURT ON YOUR SIDE ===
+1. pip install git+https://github.com/callmedraxx/bifrost-guard
+2. Save the Profile above as profile.yaml. Set `repo:` to your checkout of the project and
+   `machine_check.python:` to a Python that has the project's test dependencies.
+3. Choose your judges under `judges:` (any two; `command` judges can be any model).
+4. bifrost-guard --profile profile.yaml accept --commit <commit> --owner <operator> --client <you>
+   bifrost-guard --profile profile.yaml open --commit <commit> --hours 48
+   bifrost-guard --profile profile.yaml submit finding.json      (one JSON file per finding)
+   bifrost-guard --profile profile.yaml work                      (machine check, then judges)
+   bifrost-guard --profile profile.yaml report
+5. The report's first line is "Material findings: N". Send the report to the Operator. When your
+   two judges disagree, the Operator decides (Rule 14).
+A finding JSON has: title, file, line, steps, happens, should, harm (a code below, or empty for a
+Note), test (the full pytest file)."""
+
+
+def register_law_only(srv, profile_path: str, annotations=None):
+    """Give agents the Law and the Profile, read-only. No findings are taken and no Court runs
+    here: each reviewer runs the Court on its own side."""
+    kw = {"annotations": annotations} if annotations is not None else {}
+
+    @srv.tool(**kw)
+    def guard_rules() -> str:
+        """The review Law, this project's Profile (its harms and conditions), and how to run the
+        Court on your side. Read this before reviewing anything."""
+        prof = load_profile(profile_path)
+        harms = "\n".join(f"- {h.code}: {h.title}. {h.meaning}" for h in prof.harms)
+        return (f"{LAW_PATH.read_text()}\n\n=== PROFILE: {prof.name} {prof.version} ===\n"
+                f"{prof.source.read_text()}\n\n=== HARMS ===\n{harms}\n\n{HOW_TO_RUN}")
+
+
 def _court():
     prof = load_profile(os.environ["GUARD_PROFILE"])
     db = os.environ.get("GUARD_DB") or str(Path(prof.source).with_name("guard.db"))

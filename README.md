@@ -51,6 +51,14 @@ def test_big_trade_written_once():
 It may replace only the outside world (the packages listed under `allowed_stand_ins`), never the
 project's own code (`reviewed_packages`).
 
+## Law-only mode: the court runs on the reviewer's side
+
+A project that must stay read-only can hand out the Law without running a court. Mount
+`register_law_only(server, profile_path)` on the project's own MCP server. Agents then get the
+Law first (`INSTRUCTIONS_LAW_ONLY`) and one read-only tool, `guard_rules`, which returns the Law,
+the Profile and how to run the court themselves. No findings are sent to the project's server,
+and its machine never runs a reviewer's code.
+
 ## Judges
 
 Judges are set in the profile. `claude-code` runs the local Claude Code CLI, so it needs no API
@@ -61,6 +69,8 @@ can plug in another model.
 
 - The court can't make an outside agent obey. It decides what counts. Both sides agree once that
   only the court's report is the result.
+- The machine check runs the finding's test as real code. Run the court only on a machine you
+  are willing to run the reviewer's tests on, ideally a container with no secrets in it.
 - The stand-in check reads `monkeypatch` and `mock.patch` calls. A test that passes in a
   hand-written fake of the project's own code is not caught by the machine. The judges are told
   to catch it under Rule 13.
