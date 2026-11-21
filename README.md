@@ -51,13 +51,14 @@ def test_big_trade_written_once():
 It may replace only the outside world (the packages listed under `allowed_stand_ins`), never the
 project's own code (`reviewed_packages`).
 
-## Law-only mode: the court runs on the reviewer's side
+## Law-only mode: reviewers report, the operator checks
 
-A project that must stay read-only can hand out the Law without running a court. Mount
+A project that must stay read-only can hand out the Law without taking findings. Mount
 `register_law_only(server, profile_path)` on the project's own MCP server. Agents then get the
 Law first (`INSTRUCTIONS_LAW_ONLY`) and one read-only tool, `guard_rules`, which returns the Law,
-the Profile and how to run the court themselves. No findings are sent to the project's server,
-and its machine never runs a reviewer's code.
+the Profile and a report template. Reviewers send their report to the operator. The operator
+runs only the tests of Material claims, after reading them, and nothing of the reviewer's runs
+automatically on the project's machine.
 
 ## Judges
 
