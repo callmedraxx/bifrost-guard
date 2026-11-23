@@ -1,6 +1,6 @@
 # bifrost-guard: The Law
 
-Version 1.0 (draft, not yet accepted)
+Version 1.0. First accepted by both sides of a project on 23 November 2026 (GoldLab).
 
 These are the rules for reviewing software, whether the reviewer is a person or an AI agent.
 They say what counts as a real problem, what proof is needed, who decides, and when the review
